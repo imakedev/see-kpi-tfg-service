@@ -215,15 +215,18 @@ class AppraisalService
 
         foreach ($request->file() as $f) {
             Excel::selectSheetsByIndex(0)->load($f, function($reader) use ($structure_id, $appraisalStructure, $created_by ,$form_id) {
-                $now = now();
+                $now = date("Y-m-d H:i:s");//now();
                 $sheet =  $reader->getExcel()->getSheet(0);
 
                 DB::transaction(function () use ($structure_id, $sheet, $now,$form_id, $created_by) {
                     for ($i = 2; ; $i++) {
                         $cds_name = $sheet->getCell('A'.$i)->getValue() ;
-                        $perspective_id = $sheet->getCell('I'.$i)->getValue() ;
-                        $uom_id = $sheet->getCell('H'.$i)->getValue() ;
-                        $value_type_id = $sheet->getCell('J'.$i)->getValue() ;
+
+                        $is_corporate_kpi = $sheet->getCell('H'.$i)->getValue() ;
+                        $uom_id = $sheet->getCell('I'.$i)->getValue() ;
+                        $perspective_id = $sheet->getCell('J'.$i)->getValue() ;
+                        $value_type_id = $sheet->getCell('K'.$i)->getValue() ;
+
                         $remind_condition_id = $sheet->getCell('E'.$i)->getValue() ;
                         $formula_cds_id = $sheet->getCell('G'.$i)->getValue() ;
                         $is_show_variance = $sheet->getCell('F'.$i)->getValue() ;
@@ -253,6 +256,7 @@ class AppraisalService
                                 $appraisalItem->item_name = $cds_name; // column ตัวชี้วัด ในไฟล์ master
                                 $appraisalItem->structure_id = $structure_id; // จากพารามิเตอร์ structure ที่หน้าจอ
                                 $appraisalItem->kpi_type_id = null;
+                                $appraisalItem->is_corporate_kpi = $is_corporate_kpi;
                                 $appraisalItem->perspective_id = $perspective_id;//column I ในไฟล์ master
                                 $appraisalItem->uom_id = $uom_id;//	column H ในไฟล์ master
                                 $appraisalItem->value_type_id = $value_type_id;//	column J ในไฟล์ master
@@ -282,6 +286,7 @@ class AppraisalService
                                 $appraisalItem->item_name = $cds_name; // column ตัวชี้วัด ในไฟล์ master
                                 $appraisalItem->structure_id = $structure_id; // จากพารามิเตอร์ structure ที่หน้าจอ
                                 $appraisalItem->kpi_type_id = null;
+                                $appraisalItem->is_corporate_kpi = null;
                                 $appraisalItem->perspective_id = null;
                                 $appraisalItem->uom_id = null;
                                 $appraisalItem->value_type_id = null;
@@ -308,6 +313,7 @@ class AppraisalService
                                 $appraisalItem->item_name = $cds_name; // column ตัวชี้วัด ในไฟล์ master
                                 $appraisalItem->structure_id = $structure_id; // จากพารามิเตอร์ structure ที่หน้าจอ
                                 $appraisalItem->kpi_type_id = null;
+                                $appraisalItem->is_corporate_kpi = null;
                                 $appraisalItem->perspective_id = null;
                                 $appraisalItem->uom_id = null;
                                 $appraisalItem->value_type_id = null;
@@ -349,7 +355,7 @@ class AppraisalService
         foreach ($request->file() as $f) {
             DB::transaction(function () use ($created_by, $f) {
                 // insert into appraisal_item_level
-                $now = now();
+                $now = date("Y-m-d H:i:s");//now();
                 Excel::selectSheetsByIndex(0)->load($f, function($reader) use ($now, $created_by) {
 
                     $sheet =  $reader->getExcel()->getSheet(0);

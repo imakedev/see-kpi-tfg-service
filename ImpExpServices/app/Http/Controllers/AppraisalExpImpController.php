@@ -30,7 +30,7 @@ class AppraisalExpImpController extends Controller
             $excel->sheet($structure_name, function($sheet) use ($form_id) {
                 if($form_id ==1 ) {
                     $headers = ["ตัวชี้วัด", "หน่วยวัด", "มุมมองBSC", "เกณฑ์ประเมิน", "เงื่อนไขการแจ้งเตือน\n1=Monthly, 2=Quarterly",
-                        "แสดงผลต่าง (0/1)", "ฟังก์ชั่น\r1=Sum, 2=Last", "รหัสหน่วยวัด\n(VLOOKUP)", "รหัสมุมมองBSC\n(VLOOKUP)", "รหัสเกณฑ์ประเมิน\n(VLOOKUP)"];
+                        "แสดงผลต่าง (0/1)","แสดงใน Corporate \rDashboard (0/1)", "ฟังก์ชั่น\r1=Sum, 2=Last", "รหัสหน่วยวัด\n(VLOOKUP)", "รหัสมุมมองBSC\n(VLOOKUP)", "รหัสเกณฑ์ประเมิน\n(VLOOKUP)"];
                     $sheet->appendRow($headers);
                     $sheet->setWidth('A', 38);
                     $sheet->setWidth('B', 12);
@@ -42,6 +42,7 @@ class AppraisalExpImpController extends Controller
                     $sheet->setWidth('H', 18);
                     $sheet->setWidth('I', 18);
                     $sheet->setWidth('J', 18);
+                    $sheet->setWidth('K', 18);
 
                     $sheet->getRowDimension(1)->setRowHeight(35);
                 }else if($form_id ==2 ) {
