@@ -399,8 +399,8 @@ class AppraisalService
     }
     public static function importDetail($request){
         $created_by = $request->user_id;
-        $f='/Users/imake/Desktop/detail_import_okr.xlsx';
-        //foreach ($request->file() as $f) {
+        //$f='/Users/imake/Desktop/detail_import_okr.xlsx';
+        foreach ($request->file() as $f) {
             DB::transaction(function () use ($created_by, $f) {
                 // insert into appraisal_item_level
                 $now = date("Y-m-d H:i:s");//now();
@@ -624,5 +624,5 @@ class AppraisalService
                 });
             });
         }
-    //}
+    }
 }
