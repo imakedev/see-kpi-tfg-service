@@ -222,13 +222,13 @@ class AppraisalService
                     for ($i = 2; ; $i++) {
                         $cds_name = $sheet->getCell('A'.$i)->getValue() ;
 
-                        $is_corporate_kpi = $sheet->getCell('H'.$i)->getValue() ;
+                        $is_corporate_kpi = $sheet->getCell('G'.$i)->getValue() ;
                         $uom_id = $sheet->getCell('I'.$i)->getValue() ;
                         $perspective_id = $sheet->getCell('J'.$i)->getValue() ;
                         $value_type_id = $sheet->getCell('K'.$i)->getValue() ;
 
                         $remind_condition_id = $sheet->getCell('E'.$i)->getValue() ;
-                        $formula_cds_id = $sheet->getCell('G'.$i)->getValue() ;
+                        $formula_cds_id = $sheet->getCell('H'.$i)->getValue() ;
                         $is_show_variance = $sheet->getCell('F'.$i)->getValue() ;
                         if ( !empty($cds_name) && strlen(trim($cds_name))>0 ) {
                             Log::info($cds_name);
@@ -282,6 +282,7 @@ class AppraisalService
                                 $appraisalItem->formula_cds_name = '&nbsp;<span class="not-allowed" contenteditable="false"><div class="font-blue">[</div>last:<span class="cds_name_inline">'.$item_name.'</span><span class="cds_id_inline ">cds'.$cds_id.'</span><div class="font-blue">]</div></span>';//	&nbsp;<span class="not-allowed" contenteditable="false"><div class="font-blue">[</div>last:<span class="cds_name_inline">ค่าใช้จ่ายดำเนินงานต่อรายได้สุทธิจากการดำเนินงาน</span><span class="cds_id_inline ">cds1</span><div class="font-blue">]</div></span>
                                 // เปลี่ยนค่า cds_name_inline ที่ไฮไลท์สีแดงเป็น column ตัวชี้วัด ในไฟล์ master
                                 // เปลี่ยนค่า cds_id_inline ที่ไฮไลท์สีแดงเป็น cds_id จากชีท cds
+                                $appraisalItem->function_type = $formula_cds_id;
                                 $appraisalItem->max_value = null;
                                 $appraisalItem->unit_deduct_score = null;
                                 $appraisalItem->value_get_zero = null;
@@ -306,6 +307,7 @@ class AppraisalService
                                 $appraisalItem->formula_desc = '';
                                 $appraisalItem->formula_cds_id = '';
                                 $appraisalItem->formula_cds_name = '';
+                                $appraisalItem->function_type = null;
                                 $appraisalItem->max_value = null;
                                 $appraisalItem->unit_deduct_score = null;
                                 $appraisalItem->value_get_zero = null;
@@ -333,6 +335,7 @@ class AppraisalService
                                 $appraisalItem->formula_desc = '';
                                 $appraisalItem->formula_cds_id = '';
                                 $appraisalItem->formula_cds_name = '';
+                                $appraisalItem->function_type = null;
                                 $appraisalItem->max_value = $max_value;
                                 $appraisalItem->unit_deduct_score = $unit_deduct_score;
                                 $appraisalItem->value_get_zero = $value_get_zero;
@@ -354,6 +357,7 @@ class AppraisalService
                                         ,'baseline_value' => $appraisalItem->baseline_value , 'formula_desc' => $appraisalItem->formula_desc , 'formula_cds_id' => $appraisalItem->formula_cds_id
                                         ,'formula_cds_name' => $appraisalItem->formula_cds_name , 'max_value' => $appraisalItem->max_value , 'unit_deduct_score' => $appraisalItem->unit_deduct_score
                                         ,'value_get_zero' => $appraisalItem->value_get_zero , 'is_show_variance' => $appraisalItem->is_show_variance , 'is_active' => $appraisalItem->is_active
+                                        ,'function_type' => $appraisalItem->function_type
                                         ,'created_by' => $created_by , 'created_dttm' => $now
                                         ,'updated_by' => $created_by , 'updated_dttm' => $now]);
                                 $item_id = $appraisalItemOld[0]->item_id;
