@@ -212,7 +212,7 @@ class AppraisalService
         Log::info("created_by=".$created_by);
         $form_id = $appraisalStructure->form_id;
         Log::info("form_id=".$appraisalStructure->form_id);
-
+        //$f='/Users/imake/Desktop/master_import_okr.xlsx';
         foreach ($request->file() as $f) {
             Excel::selectSheetsByIndex(0)->load($f, function($reader) use ($structure_id, $appraisalStructure, $created_by ,$form_id) {
                 $now = date("Y-m-d H:i:s");//now();
@@ -233,21 +233,32 @@ class AppraisalService
                         if ( !empty($cds_name) && strlen(trim($cds_name))>0 ) {
                             Log::info($cds_name);
                             if($form_id==1) {
-                                $cds = new CDSModel;
-                                $cds->cds_name = $cds_name;
-                                $cds->cds_desc = $cds_name;
-                                $cds->connection_id = null;
-                                $cds->is_sql = 0;
-                                $cds->cds_sql = null;
-                                $cds->is_active = 1;
-                                $cds->created_by = $created_by;
-                                $cds->created_dttm = $now;
-                                $cds->updated_by = $created_by;
-                                $cds->updated_dttm = $now;
+                                $cds_id = null;
+                                $cdsOld= CDSModel::where('cds_name', $cds_name)->get();
+                                Log::info(sizeof($cdsOld));
+                                if ( sizeof($cdsOld)>0){
+                                    CDSModel::where('cds_id', $cdsOld[0]->cds_id)
+                                        ->update(['cds_name' => $cds_name,'cds_desc' => $cds_name
+                                                 , 'connection_id' => null , 'is_sql' => 0 , 'cds_sql' => null
+                                                 ,'is_active' => 1 , 'created_by' => $created_by , 'created_dttm' => $now
+                                                 ,'updated_by' => $created_by , 'updated_dttm' => $now]);
+                                    $cds_id = $cdsOld[0]->cds_id;
+                                }else{
+                                    $cds = new CDSModel;
+                                    $cds->cds_name = $cds_name;
+                                    $cds->cds_desc = $cds_name;
+                                    $cds->connection_id = null;
+                                    $cds->is_sql = 0;
+                                    $cds->cds_sql = null;
+                                    $cds->is_active = 1;
+                                    $cds->created_by = $created_by;
+                                    $cds->created_dttm = $now;
+                                    $cds->updated_by = $created_by;
+                                    $cds->updated_dttm = $now;
+                                    $cds->save();
+                                    $cds_id = $cds->cds_id;
+                                }
 
-                                $cds->save();
-
-                                $cds_id = $cds->cds_id;
                             }
                             $appraisalItem = new AppraisalItemModel;
                             if ($form_id == 1) {
@@ -333,10 +344,46 @@ class AppraisalService
                                 $appraisalItem->updated_dttm = $now;// system datetime
 
                             }
-                            $appraisalItem->save();
-                            $item_id = $appraisalItem->item_id;
+                            $appraisalItemOld= AppraisalItemModel::where('item_name', $cds_name)->get();
+                            $item_id = null;
+                            if ( sizeof($appraisalItemOld)>0){
+                                AppraisalItemModel::where('item_id', $appraisalItemOld[0]->item_id)
+                                    ->update(['kpi_id' => $appraisalItem->kpi_id,'item_name' => $appraisalItem->item_name , 'structure_id' => $appraisalItem->structure_id
+                                        , 'kpi_type_id' => $appraisalItem->kpi_type_id , 'is_corporate_kpi' => $appraisalItem->is_corporate_kpi , 'perspective_id' => $appraisalItem->perspective_id
+                                        ,'uom_id' => $appraisalItem->uom_id , 'value_type_id' => $appraisalItem->value_type_id , 'remind_condition_id' => $appraisalItem->remind_condition_id
+                                        ,'baseline_value' => $appraisalItem->baseline_value , 'formula_desc' => $appraisalItem->formula_desc , 'formula_cds_id' => $appraisalItem->formula_cds_id
+                                        ,'formula_cds_name' => $appraisalItem->formula_cds_name , 'max_value' => $appraisalItem->max_value , 'unit_deduct_score' => $appraisalItem->unit_deduct_score
+                                        ,'value_get_zero' => $appraisalItem->value_get_zero , 'is_show_variance' => $appraisalItem->is_show_variance , 'is_active' => $appraisalItem->is_active
+                                        ,'created_by' => $created_by , 'created_dttm' => $now
+                                        ,'updated_by' => $created_by , 'updated_dttm' => $now]);
+                                $item_id = $appraisalItemOld[0]->item_id;
+                            }else{
+                                $appraisalItem->save();
+                                $item_id = $appraisalItem->item_id;
+                            }
+
                             if($form_id==1) {
-                                DB::insert('insert into kpi_cds_mapping (item_id, cds_id,created_by,created_dttm) values (?, ?, ?, ?)', [$item_id, $cds_id, $created_by, $now]);
+                               // Log::info('$cds_id-->'.$cds_id);
+
+                                $count = DB::table('kpi_cds_mapping')
+                                    ->where('item_id','=',$item_id)
+                                    ->where('cds_id','=',$cds_id)
+                                    ->count();
+                                //Log::info('$count-->'.$count);
+                                if($count>0){
+                                    DB::table('kpi_cds_mapping')
+                                        ->where('item_id','=',$item_id)
+                                        ->where('cds_id','=',$cds_id)
+                                        /*
+                                        ->where([
+                                            ['item_id','=',$item_id ],
+                                            ['cds_id','=',$cds_id ]
+                                        ])
+                                        */
+                                        ->update(['created_by' => $created_by,'created_dttm' => $now]);
+                                }else{
+                                    DB::insert('insert into kpi_cds_mapping (item_id, cds_id,created_by,created_dttm) values (?, ?, ?, ?)', [$item_id, $cds_id, $created_by, $now]);
+                                }
                             }
                         }else{
                             break;
@@ -352,7 +399,8 @@ class AppraisalService
     }
     public static function importDetail($request){
         $created_by = $request->user_id;
-        foreach ($request->file() as $f) {
+        $f='/Users/imake/Desktop/detail_import_okr.xlsx';
+        //foreach ($request->file() as $f) {
             DB::transaction(function () use ($created_by, $f) {
                 // insert into appraisal_item_level
                 $now = date("Y-m-d H:i:s");//now();
@@ -369,16 +417,27 @@ class AppraisalService
                                 //Log::info(AppraisalService::getAppraisalLevelMaster());
                                 $items = AppraisalService::getAppraisalLevelMaster();
                                 foreach ($items as $item) {
-                                    $count = DB::table('appraisal_item_level')->where([
+                                    $count = DB::table('appraisal_item_level')
+                                        ->where('item_id','=',$item_id)
+                                        ->where('level_id','=',$item->level_id)
+                                        /*
+                                        ->where([
                                         ['item_id','=',$item_id ],
                                         ['level_id','=',$item->level_id ]
-                                    ])->count();
+                                        ])
+                                        */
+
+                                        ->count();
                                     if($count>0){
                                         DB::table('appraisal_item_level')
+                                            ->where('item_id','=',$item_id)
+                                            ->where('level_id','=',$item->level_id)
+                                            /*
                                             ->where([
                                                 ['item_id','=',$item_id ],
                                                 ['level_id','=',$item->level_id ]
                                             ])
+                                            */
                                             ->update(['created_by' => $created_by,'created_dttm' => $now, 'updated_by' => $created_by, 'updated_dttm' => $now]);
                                     }else{
                                         DB::insert('insert into appraisal_item_level (item_id, level_id ,created_by,created_dttm,updated_by,updated_dttm) values (?, ?, ?, ?, ?, ?)',
@@ -386,16 +445,26 @@ class AppraisalService
                                     }
                                 }
                             }else{
-                                $count = DB::table('appraisal_item_level')->where([
+                                $count = DB::table('appraisal_item_level')
+                                    ->where('item_id','=',$item_id)
+                                    ->where('level_id','=',$level_id)
+                                    /*
+                                    ->where([
                                     ['item_id','=',$item_id ],
                                     ['level_id','=',$level_id ]
-                                ])->count();
+                                    ])
+                                    */
+                                    ->count();
                                 if($count>0){
                                     DB::table('appraisal_item_level')
+                                        ->where('item_id','=',$item_id)
+                                        ->where('level_id','=',$level_id)
+                                        /*
                                         ->where([
                                             ['item_id','=',$item_id ],
                                             ['level_id','=',$level_id ]
                                         ])
+                                        */
                                         ->update(['created_by' => $created_by,'created_dttm' => $now, 'updated_by' => $created_by, 'updated_dttm' => $now]);
                                 }else{
                                     DB::insert('insert into appraisal_item_level (item_id, level_id ,created_by,created_dttm,updated_by,updated_dttm) values (?, ?, ?, ?, ?, ?)',
@@ -423,16 +492,26 @@ class AppraisalService
                                 //Log::info(AppraisalService::getOrgMaster());
                                 $items = AppraisalService::getOrgMaster();
                                 foreach ($items as $item) {
-                                    $count = DB::table('appraisal_item_org')->where([
+                                    $count = DB::table('appraisal_item_org')
+                                        ->where('item_id','=',$item_id)
+                                        ->where('org_id','=',$item->org_id)
+                                        /*
+                                        ->where([
                                         ['item_id','=',$item_id ],
                                         ['org_id','=',$item->org_id ]
-                                    ])->count();
+                                        ])
+                                        */
+                                        ->count();
                                     if($count>0){
                                         DB::table('appraisal_item_org')
+                                            ->where('item_id','=',$item_id)
+                                            ->where('org_id','=',$item->org_id)
+                                            /*
                                             ->where([
                                                 ['item_id','=',$item_id ],
                                                 ['org_id','=',$item->org_id ]
                                             ])
+                                            */
                                             ->update(['created_by' => $created_by,'created_dttm' => $now, 'updated_by' => $created_by, 'updated_dttm' => $now]);
                                     }else{
                                         DB::insert('insert into appraisal_item_org (item_id, org_id ,created_by,created_dttm,updated_by,updated_dttm) values (?, ?, ?, ?, ?, ?)',
@@ -440,16 +519,26 @@ class AppraisalService
                                     }
                                 }
                             }else{
-                                $count = DB::table('appraisal_item_org')->where([
+                                $count = DB::table('appraisal_item_org')
+                                    ->where('item_id','=',$item_id)
+                                    ->where('org_id','=',$org_id)
+                                    /*
+                                    ->where([
                                     ['item_id','=',$item_id ],
                                     ['org_id','=',$org_id ]
-                                ])->count();
+                                    ])
+                                    */
+                                    ->count();
                                 if($count>0){
                                     DB::table('appraisal_item_org')
+                                        ->where('item_id','=',$item_id)
+                                        ->where('org_id','=',$org_id)
+                                        /*
                                         ->where([
                                             ['item_id','=',$item_id ],
                                             ['org_id','=',$org_id ]
                                         ])
+                                        */
                                         ->update(['created_by' => $created_by,'created_dttm' => $now, 'updated_by' => $created_by, 'updated_dttm' => $now]);
                                 }else{
                                     DB::insert('insert into appraisal_item_org (item_id, org_id ,created_by,created_dttm,updated_by,updated_dttm) values (?, ?, ?, ?, ?, ?)',
@@ -475,16 +564,26 @@ class AppraisalService
                                 //Log::info(AppraisalService::getPositionMaster());
                                 $items = AppraisalService::getPositionMaster();
                                 foreach ($items as $item) {
-                                    $count = DB::table('appraisal_item_position')->where([
+                                    $count = DB::table('appraisal_item_position')
+                                        ->where('item_id','=',$item_id)
+                                        ->where('position_id','=',$item->position_id)
+                                        /*
+                                        ->where([
                                         ['item_id','=',$item_id ],
                                         ['position_id','=',$item->position_id ]
-                                    ])->count();
+                                        ])
+                                        */
+                                        ->count();
                                     if($count>0){
                                         DB::table('appraisal_item_position')
+                                            ->where('item_id','=',$item_id)
+                                            ->where('position_id','=',$item->position_id)
+                                            /*
                                             ->where([
                                                 ['item_id','=',$item_id ],
                                                 ['position_id','=',$item->position_id ]
                                             ])
+                                            */
                                             ->update(['created_by' => $created_by,'created_dttm' => $now, 'updated_by' => $created_by, 'updated_dttm' => $now]);
                                     }else{
                                         DB::insert('insert into appraisal_item_position (item_id, position_id ,created_by,created_dttm,updated_by,updated_dttm) values (?, ?, ?, ?, ?, ?)',
@@ -492,16 +591,26 @@ class AppraisalService
                                     }
                                 }
                             }else{
-                                $count = DB::table('appraisal_item_position')->where([
+                                $count = DB::table('appraisal_item_position')
+                                    ->where('item_id','=',$item_id)
+                                    ->where('position_id','=',$position_id)
+                                    /*
+                                    ->where([
                                     ['item_id','=',$item_id ],
                                     ['position_id','=',$position_id ]
-                                ])->count();
+                                    ])
+                                    */
+                                    ->count();
                                 if($count>0){
                                     DB::table('appraisal_item_position')
+                                        ->where('item_id','=',$item_id)
+                                        ->where('position_id','=',$position_id)
+                                        /*
                                         ->where([
                                             ['item_id','=',$item_id ],
                                             ['position_id','=',$position_id ]
                                         ])
+                                        */
                                         ->update(['created_by' => $created_by,'created_dttm' => $now, 'updated_by' => $created_by, 'updated_dttm' => $now]);
                                 }else{
                                     DB::insert('insert into appraisal_item_position (item_id, position_id ,created_by,created_dttm,updated_by,updated_dttm) values (?, ?, ?, ?, ?, ?)',
@@ -515,5 +624,5 @@ class AppraisalService
                 });
             });
         }
-    }
+    //}
 }
