@@ -73,7 +73,7 @@ class AppraisalExpImpController extends Controller
         //$structure_name = $appraisalStructure->structure_name;
         $form_id = $appraisalStructure->form_id;
         $bank_values = [];
-        $number_values = ['E','F','G','H','I','J'];
+        $number_values = ['E','F','G','H','I','J','K'];
         $all_number_values = [];
         if($form_id==2)
             $number_values = [];
