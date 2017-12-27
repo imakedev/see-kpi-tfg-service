@@ -24,4 +24,4 @@ Route::get('appraisal-template/get', 'AppraisalStructureController@template');
 Route::get('appraisal/master/export', 'AppraisalExpImpController@exportMaster');
 Route::POST('appraisal/master/import', 'AppraisalExpImpController@importMaster');
 Route::get('appraisal/detail/export', 'AppraisalExpImpController@exportDetail');
-Route::POST('appraisal/detail/import', 'AppraisalExpImpController@importDetail');
+Route::get('appraisal/detail/import', 'AppraisalExpImpController@importDetail');

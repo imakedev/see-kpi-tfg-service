@@ -76,16 +76,25 @@ class AppraisalExpImpController extends Controller
         $number_values = ['E','F','G','H','I','J','K'];
         $all_number_values = [];
         $header_values = ['A','B','C','D','E','F','G','H','I','J','K'];
-        if($form_id==2)
+        $master_key = ['I','J','K'];
+        $master_service = ['0','1','2'];
+        if($form_id==2) {
             $number_values = [];
-        else if($form_id==3)
-            $number_values = ['B','C','D'];
+            $master_key = [];
+            $master_service = [];
+        }
+        else if($form_id==3) {
+            $number_values = ['B', 'C', 'D'];
+            $master_key = [];
+            $master_service = [];
+        }
+        Log::info('form id['.$form_id.']');
         $appraialValidator = new AppraialValidator();
-        $result_obj = $appraialValidator->validateTemplate(1,$request,$header_values,$bank_values,$number_values,$all_number_values);
-        /*
+        $result_obj = $appraialValidator->validateTemplate(1,$request,$master_key,$master_service,$header_values,$bank_values,$number_values,$all_number_values);
+        /* */
         if($result_obj->result_status == 1 )
             AppraisalService::importMaster($request);
-        */
+        /* */
         return response()->json($result_obj, 200);
     }
 
@@ -108,8 +117,10 @@ class AppraisalExpImpController extends Controller
         $number_values = ['A'];
         $all_number_values = ['D'];
         $header_values = ['A','B','C','D'];
+        $master_key = ['D'];
+        $master_service = ['0']; // start with 3 ( numberoffSheet )
         $appraialValidator = new AppraialValidator();
-        $result_obj = $appraialValidator->validateTemplate(3,$request,$header_values,$bank_values,$number_values,$all_number_values);
+        $result_obj = $appraialValidator->validateTemplate(3,$request,$master_key,$master_service,$header_values,$bank_values,$number_values,$all_number_values);
 
         if($result_obj->result_status == 1 )
             AppraisalService::importDetail($request);

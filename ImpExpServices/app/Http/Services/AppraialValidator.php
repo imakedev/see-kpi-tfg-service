@@ -12,7 +12,7 @@ use Excel;
 use Log;
 class AppraialValidator
 {
-    public  function validateTemplate($numberOfSheet,$request,$header_values,$bank_values,$number_values,$all_number_values){
+    public  function validateTemplate($numberOfSheet,$request,$master_key,$master_service,$header_values,$bank_values,$number_values,$all_number_values){
         $structure_id = $request->structure_id;
         $appraisalStructure = AppraisalStructureModel::find($structure_id);
         $structure_name = $appraisalStructure->structure_name;
@@ -21,11 +21,54 @@ class AppraialValidator
         $this->result_status = 1;
         $this->code = "S001";
         $this->msg = "import Success";
+        $uom_items = AppraisalService::getUomMaster();
+        $perspective_items = AppraisalService::getPerspectiveMaster();
+        $value_type_items = AppraisalService::getValueTypeMaster();
+
+        $appraisal_level_items = AppraisalService::getAppraisalLevelMaster();
+        $org_tems = AppraisalService::getOrgMaster();
+        $position_items = AppraisalService::getPositionMaster();
+
+        $uom_items_key = array();
+        foreach ($uom_items as $i) {
+            array_push($uom_items_key, $i->uom_id);
+        }
+        $perspective_items_key = array();
+        foreach ($perspective_items as $i) {
+            array_push($perspective_items_key, $i->perspective_id);
+        }
+        $value_type_items_key = array();
+        foreach ($value_type_items as $i) {
+            array_push($value_type_items_key, $i->value_type_id);
+        }
+        $appraisal_level_items_key = array();
+        foreach ($appraisal_level_items as $i) {
+            array_push($appraisal_level_items_key, $i->level_id);
+        }
+        $org_tems_key = array();
+        foreach ($org_tems as $i) {
+            array_push($org_tems_key, $i->org_id);
+        }
+        $position_items_key = array();
+        foreach ($position_items as $i) {
+            array_push($position_items_key, $i->position_id);
+        }
+
+        $services = [$uom_items_key,$perspective_items_key,$value_type_items_key,$appraisal_level_items_key,$org_tems_key,$position_items_key];
+
+           //Log::info($appraisal_level_items_key);
+        /*
+        if (!in_array(intval('10'), $appraisal_level_items_key)) {
+              Log::info('not have key');
+        }
+        */
+
+
         //$f='/Users/imake/Desktop/detail_import_okr.xlsx';
         foreach ($request->file() as $f) {
             for ($k = 0;$k<$numberOfSheet ; $k++) {
                 //Log::info('into looop '.$k);
-                Excel::selectSheetsByIndex($k)->load($f, function($reader) use ($header_values, $all_number_values, $k, $bank_values, $number_values,$structure_name) {
+                Excel::selectSheetsByIndex($k)->load($f, function($reader) use ($numberOfSheet, $master_service, $services, $master_key, $header_values, $all_number_values, $k, $bank_values, $number_values,$structure_name) {
                     $sheet =  $reader->getExcel()->getSheet($k);
                     $sheet_name = $sheet->getTitle();
                     $pos = strpos($sheet_name,$structure_name);
@@ -56,7 +99,7 @@ class AppraialValidator
                         }
                     }
                     $head_val = $sheet->getCell("A1")->getValue() ;
-                    Log::info('head_val['.$head_val.']');
+                    //Log::info('head_val['.$head_val.']');
                     for ($i = 2; ; $i++) {
                         $cds_name = $sheet->getCell('A'.$i)->getValue() ;
                         if ( !empty($cds_name) && strlen(trim($cds_name))>0 ) {
@@ -91,6 +134,43 @@ class AppraialValidator
                                     goto end;
                                 }
                             }
+
+                            // check key master
+                            if($numberOfSheet==1) {
+                                for ($j = 0; $j < sizeof($master_key); $j++) {
+                                    $key_of_service = $master_service[$j];
+                                    $master_val = $sheet->getCell($master_key[$j] . $i)->getValue();
+                                    //Log::info('$master_val[' . $master_val . ']');
+                                    if (strtolower(trim($master_val)) != 'all') {
+                                        if (!in_array(intval($master_val), $services[$key_of_service])) {
+                                            $this->result_status = 0;
+                                            $this->code = 'E007';
+                                            $this->msg = "ไม่มีข้อมูลใน VLOOKUP Sheet[" . $sheet_name . ']!' . $master_key[$j] . $i;
+                                            goto end;
+                                        }
+                                    }
+
+                                    //Log::info(sizeof($services[$key_of_service]));
+                                }
+                            }else{
+                                for ($j = 0; $j < sizeof($master_key); $j++) {
+                                    $key_of_service = $master_service[$j]+$numberOfSheet+$k;
+                                    $master_val = $sheet->getCell($master_key[$j] . $i)->getValue();
+                                    //Log::info("key_of_service[".$key_of_service."]");
+                                    //Log::info('$master_val for detail[' . $master_val . '], service size['.sizeof($services[$key_of_service]).']');
+                                    if (strtolower(trim($master_val)) != 'all') {
+                                        if (!in_array(intval($master_val), $services[$key_of_service])) {
+                                            $this->result_status = 0;
+                                            $this->code = 'E007';
+                                            $this->msg = "ไม่มีข้อมูลใน VLOOKUP Sheet[" . $sheet_name . ']!' . $master_key[$j] . $i;
+                                            goto end;
+                                        }
+                                    }
+
+                                    //Log::info(sizeof($services[$key_of_service]));
+                                }
+                            }
+
 
                         }else{
                             break;
