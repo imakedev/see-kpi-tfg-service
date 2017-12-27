@@ -63,7 +63,8 @@ class AppraialValidator
                             //Log::info($cds_name);
                             foreach ($bank_values as $bank) {
                                 $bank_val = $sheet->getCell($bank.$i)->getValue() ;
-                                if ( !empty($bank_val) && strlen(trim($bank_val))>0 ) {
+                                //if ( !empty($bank_val) && strlen(trim($bank_val))>0 ) {
+                                if ( !(!empty($bank_val) && strlen(trim($bank_val))>0) ) {
                                     $this->result_status = 0;
                                     $this->code = 'E002';
                                     $this->msg = "กรุณากรอกข้อมูลช่อง Sheet[".$sheet_name.']!'.$bank.$i;
