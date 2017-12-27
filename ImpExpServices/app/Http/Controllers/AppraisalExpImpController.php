@@ -75,16 +75,17 @@ class AppraisalExpImpController extends Controller
         $bank_values = [];
         $number_values = ['E','F','G','H','I','J','K'];
         $all_number_values = [];
+        $header_values = ['A','B','C','D','E','F','G','H','I','J','K'];
         if($form_id==2)
             $number_values = [];
         else if($form_id==3)
             $number_values = ['B','C','D'];
         $appraialValidator = new AppraialValidator();
-        $result_obj = $appraialValidator->validateTemplate(1,$request,$bank_values,$number_values,$all_number_values);
-
+        $result_obj = $appraialValidator->validateTemplate(1,$request,$header_values,$bank_values,$number_values,$all_number_values);
+        /*
         if($result_obj->result_status == 1 )
             AppraisalService::importMaster($request);
-
+        */
         return response()->json($result_obj, 200);
     }
 
@@ -106,8 +107,9 @@ class AppraisalExpImpController extends Controller
         $bank_values = [];
         $number_values = ['A'];
         $all_number_values = ['D'];
+        $header_values = ['A','B','C','D'];
         $appraialValidator = new AppraialValidator();
-        $result_obj = $appraialValidator->validateTemplate(3,$request,$bank_values,$number_values,$all_number_values);
+        $result_obj = $appraialValidator->validateTemplate(3,$request,$header_values,$bank_values,$number_values,$all_number_values);
 
         if($result_obj->result_status == 1 )
             AppraisalService::importDetail($request);
