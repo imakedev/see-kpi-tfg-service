@@ -21,8 +21,8 @@ class AppraialValidator
         $this->result_status = 1;
         $this->code = "S001";
         $this->msg = "import Success";
-        $f='/Users/imake/Desktop/detail_import_okr.xlsx';
-        //foreach ($request->file() as $f) {
+        //$f='/Users/imake/Desktop/detail_import_okr.xlsx';
+        foreach ($request->file() as $f) {
             for ($k = 0;$k<$numberOfSheet ; $k++) {
                 //Log::info('into looop '.$k);
                 Excel::selectSheetsByIndex($k)->load($f, function($reader) use ($header_values, $all_number_values, $k, $bank_values, $number_values,$structure_name) {
@@ -101,7 +101,7 @@ class AppraialValidator
                     break;
             }
 
-        //}
+        }
 
         $result_obj = new \stdClass; // Instantiate stdClass object
         $result_obj->result_status = $this->result_status;
