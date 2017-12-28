@@ -78,23 +78,32 @@ class AppraisalExpImpController extends Controller
         $header_values = ['A','B','C','D','E','F','G','H','I','J','K'];
         $master_key = ['I','J','K'];
         $master_service = ['0','1','2'];
+
+        $fixed_values =  ['E','F','G','H'];
+        $fixed_key =  ['0','1','1','0'];
         if($form_id==2) {
+            $header_values = ['A'];
             $number_values = [];
             $master_key = [];
             $master_service = [];
+            $fixed_values =  [];
+            $fixed_key =  [];
         }
         else if($form_id==3) {
+            $header_values = ['A','B','C','D'];
             $number_values = ['B', 'C', 'D'];
             $master_key = [];
             $master_service = [];
+            $fixed_values =  [];
+            $fixed_key =  [];
         }
         Log::info('form id['.$form_id.']');
         $appraialValidator = new AppraialValidator();
-        $result_obj = $appraialValidator->validateTemplate(1,$request,$master_key,$master_service,$header_values,$bank_values,$number_values,$all_number_values);
-        /* */
+        $result_obj = $appraialValidator->validateTemplate(1,$request,$fixed_values,$fixed_key,$master_key,$master_service,$header_values,$bank_values,$number_values,$all_number_values);
+        /*
         if($result_obj->result_status == 1 )
             AppraisalService::importMaster($request);
-        /* */
+         */
         return response()->json($result_obj, 200);
     }
 
@@ -119,8 +128,10 @@ class AppraisalExpImpController extends Controller
         $header_values = ['A','B','C','D'];
         $master_key = ['D'];
         $master_service = ['0']; // start with 3 ( numberoffSheet )
+        $fixed_values =  [];
+        $fixed_key =  [];
         $appraialValidator = new AppraialValidator();
-        $result_obj = $appraialValidator->validateTemplate(3,$request,$master_key,$master_service,$header_values,$bank_values,$number_values,$all_number_values);
+        $result_obj = $appraialValidator->validateTemplate(3,$request,$fixed_values,$fixed_key,$master_key,$master_service,$header_values,$bank_values,$number_values,$all_number_values);
 
         if($result_obj->result_status == 1 )
             AppraisalService::importDetail($request);

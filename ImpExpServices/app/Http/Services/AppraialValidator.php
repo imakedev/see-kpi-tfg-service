@@ -12,7 +12,7 @@ use Excel;
 use Log;
 class AppraialValidator
 {
-    public  function validateTemplate($numberOfSheet,$request,$master_key,$master_service,$header_values,$bank_values,$number_values,$all_number_values){
+    public  function validateTemplate($numberOfSheet,$request,$fixed_values,$fixed_key,$master_key,$master_service,$header_values,$bank_values,$number_values,$all_number_values){
         $structure_id = $request->structure_id;
         $appraisalStructure = AppraisalStructureModel::find($structure_id);
         $structure_name = $appraisalStructure->structure_name;
@@ -56,19 +56,22 @@ class AppraialValidator
 
         $services = [$uom_items_key,$perspective_items_key,$value_type_items_key,$appraisal_level_items_key,$org_tems_key,$position_items_key];
 
-           //Log::info($appraisal_level_items_key);
-        /*
-        if (!in_array(intval('10'), $appraisal_level_items_key)) {
-              Log::info('not have key');
-        }
-        */
+
+        $fixed_key_1 =  ['0','1'];
+        $fixed_key_2 =  ['1','2'];
+
+        $fixed_keys = [$fixed_key_1,$fixed_key_2];
 
 
-        //$f='/Users/imake/Desktop/detail_import_okr.xlsx';
+
+        //$f='/Users/imake/Desktop/master_import_okr.xlsx';
+        //$f='/Users/imake/Desktop/master_import_learning.xlsx';
+        //$f='/Users/imake/Desktop/master_import_attendance.xlsx';
+
         foreach ($request->file() as $f) {
             for ($k = 0;$k<$numberOfSheet ; $k++) {
                 //Log::info('into looop '.$k);
-                Excel::selectSheetsByIndex($k)->load($f, function($reader) use ($numberOfSheet, $master_service, $services, $master_key, $header_values, $all_number_values, $k, $bank_values, $number_values,$structure_name) {
+                Excel::selectSheetsByIndex($k)->load($f, function($reader) use ($fixed_keys, $fixed_key, $fixed_values, $numberOfSheet, $master_service, $services, $master_key, $header_values, $all_number_values, $k, $bank_values, $number_values,$structure_name) {
                     $sheet =  $reader->getExcel()->getSheet($k);
                     $sheet_name = $sheet->getTitle();
                     $pos = strpos($sheet_name,$structure_name);
@@ -89,16 +92,23 @@ class AppraialValidator
                             goto end;
                         }
                     }
+                    $head_val = $sheet->getCell("F2")->getValue() ;
+                    Log::info('check value['.$head_val.']');
+                    if ( !( strlen(trim($head_val))>0 ) ) {
+                        Log::info('check true['.$head_val.']');
+                        Log::info('check true['.!empty($head_val).']');
+                        Log::info('check true['.strlen(trim($head_val)).']');
+                    }
                     foreach ($header_values as $header) {
                         $head_val = $sheet->getCell($header.'2')->getValue() ;
-                        if ( !(!empty($head_val) && strlen(trim($head_val))>0) ) {
+                        if ( !( strlen(trim($head_val))>0 )  ) {
                             $this->result_status = 0;
                             $this->code = 'E006';
                             $this->msg = "กรุณากรอกข้อมูลช่อง Sheet[".$sheet_name.']!'.$header.'2';
                             goto end;
                         }
                     }
-                    $head_val = $sheet->getCell("A1")->getValue() ;
+                    //$head_val = $sheet->getCell("A1")->getValue() ;
                     //Log::info('head_val['.$head_val.']');
                     for ($i = 2; ; $i++) {
                         $cds_name = $sheet->getCell('A'.$i)->getValue() ;
@@ -149,9 +159,22 @@ class AppraialValidator
                                             goto end;
                                         }
                                     }
-
-                                    //Log::info(sizeof($services[$key_of_service]));
                                 }
+                                //$fixed_values,$fixed_key
+                                // for fixed value
+                                //Log::info("fixed_values".sizeof($fixed_values));
+                                for ($j = 0; $j < sizeof($fixed_values); $j++) {
+                                    $key_of_service = $fixed_key[$j];
+                                    $master_val = $sheet->getCell($fixed_values[$j] . $i)->getValue();
+                                    //Log::info('$master_val[' . $master_val . ']');
+                                        if (!in_array(intval($master_val), $fixed_keys[$key_of_service])) {
+                                            $this->result_status = 0;
+                                            $this->code = 'E008';
+                                            $this->msg = "ใส่่ข้อมูลไม่ถูกต้อง Sheet[" . $sheet_name . ']!' . $fixed_values[$j] . $i;
+                                            goto end;
+                                        }
+                                }
+
                             }else{
                                 for ($j = 0; $j < sizeof($master_key); $j++) {
                                     $key_of_service = $master_service[$j]+$numberOfSheet+$k;
