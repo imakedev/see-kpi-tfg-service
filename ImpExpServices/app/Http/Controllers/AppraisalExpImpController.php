@@ -100,10 +100,10 @@ class AppraisalExpImpController extends Controller
         Log::info('form id['.$form_id.']');
         $appraialValidator = new AppraialValidator();
         $result_obj = $appraialValidator->validateTemplate(1,$request,$fixed_values,$fixed_key,$master_key,$master_service,$header_values,$bank_values,$number_values,$all_number_values);
-        /*
+        /* */
         if($result_obj->result_status == 1 )
             AppraisalService::importMaster($request);
-         */
+         /* */
         return response()->json($result_obj, 200);
     }
 
