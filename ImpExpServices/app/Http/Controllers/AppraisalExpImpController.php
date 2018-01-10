@@ -80,7 +80,11 @@ class AppraisalExpImpController extends Controller
         $master_service = ['0','1','2'];
 
         $fixed_values =  ['E','F','G','H'];
-        $fixed_key =  ['0','1','1','0'];
+        $fixed_key =  ['1','0','0','1'];
+        //$fixed_key_1 =  ['0','1'];
+        //$fixed_key_2 =  ['1','2'];
+
+        //$fixed_keys = [$fixed_key_1,$fixed_key_2];
         if($form_id==2) {
             $header_values = ['A'];
             $number_values = [];
@@ -103,7 +107,7 @@ class AppraisalExpImpController extends Controller
         /* */
         if($result_obj->result_status == 1 )
             AppraisalService::importMaster($request);
-         /* */
+          /* */
         return response()->json($result_obj, 200);
     }
 
