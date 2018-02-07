@@ -277,6 +277,8 @@ class AppraisalService
                                 $formula_cds = 'sum';
                                 if($formula_cds_id==2)
                                     $formula_cds = 'last';
+                                else if($formula_cds_id==3)
+                                    $formula_cds = 'avg';
                                 $appraisalItem->formula_cds_id = '['.$formula_cds.':cds' . $cds_id . ']';//ถ้า column G ในไฟล์ master เป็น 1 บันทึกเป็น [sum:cds1]  -> 1 คือ cds_id จากชีท cds
                                 //ถ้า column G ในไฟล์ master เป็น 2 บันทึกเป็น [last:cds1]  -> 1 คือ cds_id จากชีท cds
                                 $appraisalItem->formula_cds_name = '&nbsp;<span class="not-allowed" contenteditable="false"><div class="font-blue">[</div>'.$formula_cds.':<span class="cds_name_inline">'.$item_name.'</span><span class="cds_id_inline ">cds'.$cds_id.'</span><div class="font-blue">]</div></span>';//	&nbsp;<span class="not-allowed" contenteditable="false"><div class="font-blue">[</div>last:<span class="cds_name_inline">ค่าใช้จ่ายดำเนินงานต่อรายได้สุทธิจากการดำเนินงาน</span><span class="cds_id_inline ">cds1</span><div class="font-blue">]</div></span>
