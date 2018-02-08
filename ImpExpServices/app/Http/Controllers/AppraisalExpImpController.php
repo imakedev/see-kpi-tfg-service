@@ -80,7 +80,7 @@ class AppraisalExpImpController extends Controller
         $master_service = ['0','1','2'];
 
         $fixed_values =  ['E','F','G','H'];
-        $fixed_key =  ['1','0','0','1'];
+        $fixed_key =  ['1','0','0','2'];
         //$fixed_key_1 =  ['0','1'];
         //$fixed_key_2 =  ['1','2'];
 
